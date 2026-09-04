@@ -33,12 +33,18 @@ def crypt_block(block, key, decrypt, rounds=32):
     return [R, L]
 
 def write_file(filename, data):
-    with open(filename, 'wb') as file:
-        file.write(data)
+    try:
+        with open(filename, 'wb') as file:
+            file.write(data)
+    except:
+        print("Failed to write to file")
 
 def read_file(filename):
-    with open(filename, 'rb') as file:
-        return file.read()
+    try:
+        with open(filename, 'rb') as file:
+            return file.read()
+    except:
+        print(f"Failed to read from file '{filename}'")
 
 def align(data, mode):
     alignment = (8 - (len(data) % 8)) % 8
@@ -106,6 +112,7 @@ def main():
     if len(sys.argv) not in (4, 5):
         print("Invalid arguments")
         print(USAGE_MESSAGE)
+        return
     mode = sys.argv[1].lower()
     input_file = sys.argv[2]
     output_file = sys.argv[3]
@@ -125,13 +132,10 @@ def main():
         return
     if not os.path.isfile(input_file):
         print(f"File '{input_file}' not found")
+        return
 
     decrypt = True if action == "decrypt" else False
-    try:
-        data = read_file(input_file)
-    except:
-        print(f"Failed to read from file '{input_file}'")
-
+    data = read_file(input_file)
     if not decrypt:
         data = align(data, mode)
 
@@ -152,11 +156,7 @@ def main():
     if (decrypt and mode in ("simple", "feedback")) or mode == "gamma":
         data = remove_alignment(data)
 
-    try:
-        write_file(output_file, data)
-    except:
-        print("Failed to write to file")
-
+    write_file(output_file, data)
     if mode == "prefix":
         print(f"Prefix for file {input_file} has been generated into {output_file}")
     else:
